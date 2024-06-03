@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const DBNAME="dev-test";
+const DBNAME="Eksamen";
 
 const mongoConnect = URI =>{
     let state = 'unresolved'

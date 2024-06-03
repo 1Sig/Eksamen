@@ -1,20 +1,26 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const PASSWORDLENGTH=8;
+const PASSWORD_LENGTH = 8;
 
-const todoschema=mongoose.Schema({
-    title: {
-        type: String,
-        required: true,
-        minlength: [5, 'your title needs to be at least 5 characters']
-    },
-    description: {
-        type: String,
-        required: true,
-        minlength: [10, 'Your task needs to be more descriptive! 10 characters please!']
-    }
-})
-const userschema=mongoose.Schema({
+// Cart Schema
+const CartSchema = new mongoose.Schema({
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    cartPlagg: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plagg' }],
+    cartId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true }
+});
+
+// Plagg Schema
+const PlaggSchema = new mongoose.Schema({
+    plaggId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true },
+    productName: { type: String, required: true },
+    kategori: { type: String, required: true },
+    description: { type: String, required: true },
+    timestamps: { type: Date, default: Date.now },
+    creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+});
+
+// User Schema
+const UserSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
@@ -24,27 +30,22 @@ const userschema=mongoose.Schema({
     role: {
         type: String,
         required: true,
-        enum: ['user','admin'],
+        enum: ['user', 'admin'],
         default: 'user'
     },
     password: {
         type: String,
         required: true,
-        minlength: [PASSWORDLENGTH, `Passwords must have at least this many letters: ${PASSWORDLENGTH}`]
+        minlength: [PASSWORD_LENGTH, `Passwords must have at least this many letters: ${PASSWORD_LENGTH}`]
     },
-    todos:[todoschema]
-})
+    cart: [CartSchema]
+});
 
-userschema.pre('save', hashPassword);
+UserSchema.pre('save', hashPassword);
 
-userschema.statics.login=login;
-userschema.methods.changeUserRole=changeUserRole;
+UserSchema.statics.login = login;
+UserSchema.methods.changeUserRole = changeUserRole;
 
-/**
- * @param {*} username of the user to log in
- * @param {*} password of the user to log in
- * @returns the user if credentials is successfully validated or null in any other case.
- */
 async function login(username, password){
     let loginresult = null;
     const user = await this.findOne({username});
@@ -69,21 +70,22 @@ async function hashPassword(next){
  * an explicit choice. 
  * @param {Boolean} isDowngrade if false, will upgrade 
  */
-async function changeUserRole(isDowngrade=true){
-    let updatedUser=null;
-    if(isDowngrade) {
-        this.role='user';
+async function changeUserRole(isDowngrade = true) {
+    let updatedUser = null;
+    if (isDowngrade) {
+        this.role = 'user';
     } else {
-        this.role='admin';
+        this.role = 'admin';
     }
     try {
         updatedUser = await this.save();
-
-    } catch(error){
+    } catch (error) {
         throw error;
     }
     return updatedUser;
 }
-const User = mongoose.model('user',userschema);
 
-module.exports=User;
+const User = mongoose.model('User', UserSchema);
+const Plagg = mongoose.model('Plagg', PlaggSchema);
+
+module.exports = { User, Plagg };

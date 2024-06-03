@@ -10,8 +10,8 @@ const {
     createuser,
     loginuser,
     logoutuser,
-    createtodo,
-    removetodo,
+    createPlagg,
+    removePlagg,
     deleteuser,
     upgradeuser,
     refreshUser
@@ -25,8 +25,8 @@ router.post('/logout', invalidateTokens, logoutuser)
 
 
 //Protected routes
-router.post('/create-todo', authenticate, createtodo);
-router.delete('/remove-todo', authenticate, removetodo);
+router.post('/create-Plagg', authenticate, createPlagg);
+router.delete('/remove-Plagg', authenticate, removePlagg);
 router.delete('/delete-user', authenticate, authorizeAdmin, deleteuser);
 router.patch('/create-admin', authenticate, authorizeAdmin, upgradeuser);
 
