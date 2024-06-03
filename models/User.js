@@ -3,14 +3,14 @@ const bcrypt = require('bcrypt');
 const PASSWORD_LENGTH = 8;
 
 // Cart Schema
-const CartSchema = new mongoose.Schema({
+const cartSchema = new mongoose.Schema({
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     cartPlagg: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plagg' }],
     cartId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true }
 });
 
 // Plagg Schema
-const PlaggSchema = new mongoose.Schema({
+const plaggSchema = new mongoose.Schema({
     plaggId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true },
     productName: { type: String, required: true },
     kategori: { type: String, required: true },
@@ -20,7 +20,7 @@ const PlaggSchema = new mongoose.Schema({
 });
 
 // User Schema
-const UserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
@@ -38,13 +38,13 @@ const UserSchema = new mongoose.Schema({
         required: true,
         minlength: [PASSWORD_LENGTH, `Passwords must have at least this many letters: ${PASSWORD_LENGTH}`]
     },
-    cart: [CartSchema]
+    cart: [cartSchema]
 });
 
-UserSchema.pre('save', hashPassword);
+userSchema.pre('save', hashPassword);
 
-UserSchema.statics.login = login;
-UserSchema.methods.changeUserRole = changeUserRole;
+userSchema.statics.login = login;
+userSchema.methods.changeUserRole = changeUserRole;
 
 async function login(username, password){
     let loginresult = null;
@@ -85,7 +85,7 @@ async function changeUserRole(isDowngrade = true) {
     return updatedUser;
 }
 
-const User = mongoose.model('User', UserSchema);
-const Plagg = mongoose.model('Plagg', PlaggSchema);
+const User = mongoose.model('User', userSchema);
+const Plagg = mongoose.model('Plagg', plaggSchema);
 
 module.exports = { User, Plagg };

@@ -25,8 +25,8 @@ router.post('/logout', invalidateTokens, logoutuser)
 
 
 //Protected routes
-router.post('/create-Plagg', authenticate, createPlagg);
-router.delete('/remove-Plagg', authenticate, removePlagg);
+router.post('/create-plagg', authenticate, createPlagg);
+router.delete('/remove-plagg', authenticate, removePlagg);
 router.delete('/delete-user', authenticate, authorizeAdmin, deleteuser);
 router.patch('/create-admin', authenticate, authorizeAdmin, upgradeuser);
 

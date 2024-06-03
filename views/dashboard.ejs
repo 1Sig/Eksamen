@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= user.username %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="/"><img src="IMG/Logo.png" alt="Logo" class="nav-logo"></a></li>
+      <li><a href="/dashboard" class="nav-button">Quote - <%= user.username %></a></li>
+      <% if (user) { %>
+        <li><a href="/logout" class="nav-button">Log Out</a></li>
+      <% } else { %>
+        <li><a href="/login" class="nav-button">Log In</a></li>
+      <% } %>
+    </ul>
+  </nav>
+
+  <div class="container"> 
+    <h1>Welcome to Your Dashboard, <%= user.username %>!</h1>
+
+    <h2>Post a Quote</h2>
+    <form action="/post-quote" method="POST">
+      <input type="text" name="quote" placeholder="Enter your quote" required>
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Display quotes -->
+    <% if (quotes.length > 0) { %>
+      <h2>Your Quotes</h2>
+      <ul>
+        <% quotes.forEach(quote => { %>
+          <li><%= quote.quote %></li>
+        <% }); %>
+      </ul>
+    <% } else { %>
+      <p>No quotes posted yet.</p>
+    <% } %>
+  </div> 
+</body>
+</html>

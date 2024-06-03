@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const {User, Plagg} = require('../models/User');
 const RefreshToken = require('../models/RefreshToken');
 const crypto = require('crypto');
 
@@ -14,6 +14,9 @@ const { response } = require('express');
 
 const createuser = async (req, res) => {
     const { username, password } = req.body;
+    console.log('Username:', username);
+    console.log('Password:', password)
+
     let feedback = createFeedback(404, `${username} could not be created.`);
 
     if (typeof(username) !== 'undefined' && typeof(password) !== 'undefined') {
@@ -88,6 +91,8 @@ const loginuser = async (req, res)=>{
 
         if(refreshToken){
             feedback=createFeedback(200, `${username} was authenticated`, true, {accessToken, refreshToken});
+            // Store the user data in session
+            req.session.user = { username: user.username }; 
         } else {
             feedback=internalServerError();
         }

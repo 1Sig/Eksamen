@@ -1,0 +1,40 @@
+<!-- register.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="/"><img src="IMG/Logo.png" alt="Logo" class="nav-logo"></a></li>
+      <li><a href="/dashboard" class="nav-button">Qoute</a></li> 
+    <% if (user) { %>
+      <li><a href="/logout" class="nav-button">Log Out</a></li>
+    <% } else { %>
+      <li><a href="/login" class="nav-button">Log In</a></li>
+    <% } %>
+    </ul>
+  </nav>
+  
+  <div class="container">
+  <h1>Register</h1>
+  <form action="/register" method="POST">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="password" name="password2" placeholder="Confirm Password" required>
+    <% if (errors && errors.length > 0) { %>
+      <div class="errors">
+        <% errors.forEach(error => { %>
+          <p><%= error %></p>
+        <% }); %>
+      </div>
+    <% } %>
+    <button type="submit">Register</button>
+  </form>
+  </div>
+</body>
+</html>
