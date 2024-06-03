@@ -6,7 +6,7 @@ const PASSWORD_LENGTH = 8;
 const cartSchema = new mongoose.Schema({
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     cartPlagg: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plagg' }],
-    cartId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true }
+    cartId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true, default: () => new mongoose.Types.ObjectId() }
 });
 
 // Plagg Schema

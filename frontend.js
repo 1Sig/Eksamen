@@ -23,33 +23,20 @@ const configureRoutes = (app) => {
         res.render('index', { title: 'Hjemmeside', user: user  });
     });
 
-    // Andre visningsruter
+  // Andre visningsruter
+  app.get('/login', (req, res) => {
+    // Sjekk om brukeren er logget inn
+    const user = req.session.user;
+    const errors = req.flash('error');
+    res.render('login', { title: 'Log Inn', user: user, errors: errors });
+});
 
-    // Ruter for statiske filer
-    app.get('/login', (req, res) => {
-        // Sjekk om brukeren er logget inn
-        const user = req.session.user;
-        
-        let errors = [];
-        if (error) {
-            errors.push('Feilmelding her...');
-        }
-
-        res.render('login', { title: 'Log Inn' , user: user, errors: errors  });
-    });
-
-    // Ruter for statiske filer
-    app.get('/register', (req, res) => {
-        // Sjekk om brukeren er logget inn
-        const user = req.session.user;
-        
-        let errors = [];
-        if (error) {
-            errors.push('Feilmelding her...');
-        }
-
-        res.render('register', { title: 'Registration side' , user: user, errors: errors });
-    });
+app.get('/register', (req, res) => {
+    // Sjekk om brukeren er logget inn
+    const user = req.session.user;
+    const errors = req.flash('error');
+    res.render('register', { title: 'Registration side', user: user, errors: errors });
+});
 
     // Ruter for statiske filer
     app.get('/dashbord', (req, res) => {

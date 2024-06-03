@@ -3,6 +3,7 @@ const appEventHandler = require('./handlers/appEventHandler');
 const express = require('express');
 const session = require('express-session');
 const app = express();
+const flash = require('connect-flash');
 const default_routes=require('./routes/default_routes');
 const user_api=require('./routes/api_user_routes');
 const {startScheduler}=require('./services/scheduler');
@@ -23,6 +24,8 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }));
+
+app.use(flash());
 
 // Konfigurer front end
 configureFrontend(app);

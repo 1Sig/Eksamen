@@ -15,16 +15,30 @@ const { response } = require('express');
 const createuser = async (req, res) => {
     const { username, password } = req.body;
     console.log('Username:', username);
-    console.log('Password:', password)
+    console.log('Password:', password);
 
     let feedback = createFeedback(404, `${username} could not be created.`);
 
     if (typeof(username) !== 'undefined' && typeof(password) !== 'undefined') {
         try {
-            const result = await User.create({ username, password });
-            if (result) {
-                const { _id } = result;
-                feedback = createFeedback(200, `${username} was created!`, true, { _id });
+            // Opprett bruker
+            const user = await User.create({ username, password });
+            if (user) {
+                // Opprett cart for den nye brukeren
+                const cart = await Cart.create({ owner: user._id, cartId: new mongoose.Types.ObjectId() });
+                
+                if (cart) {
+                    // Generer tokens
+                    const accessToken = generateAccessToken(user._id);
+                    const refreshToken = await generateRefreshToken(user._id);
+
+                    // Lagre brukerdata i sesjonen
+                    req.session.user = { username: user.username };
+
+                    feedback = createFeedback(200, `${username} was created and logged in!`, true, { user, cart, accessToken, refreshToken });
+                } else {
+                    feedback = internalServerError();
+                }
             }
         } catch(error) {
             feedback = createFeedback(409, `${username} could not be created!`, false, error);
@@ -32,7 +46,8 @@ const createuser = async (req, res) => {
     }
     console.log('Payload:', feedback.payload); // Logging the payload to the console
     res.status(feedback.statuscode).json(feedback);
-}
+};
+
 
 
 const upgradeuser = async (req, res)=>{
@@ -78,27 +93,27 @@ const logoutuser = async (req, res)=> {
     }
     res.status(feedback.statuscode).json(feedback);
 }
-const loginuser = async (req, res)=>{
-    const {username, password} = req.body;
-    let feedback=accessDenied();
-    const user = await User.login(username,password);
-   
-    if(user){
-        const {_id} = user;
-        //expiration: one hour
-        const accessToken = generateAccessToken(_id)
+const loginuser = async (req, res) => {
+    const { username, password } = req.body;
+    let feedback = accessDenied();
+    const user = await User.login(username, password);
+
+    if (user) {
+        const { _id } = user;
+        // Expiration: one hour
+        const accessToken = generateAccessToken(_id);
         const refreshToken = await generateRefreshToken(_id);
 
-        if(refreshToken){
-            feedback=createFeedback(200, `${username} was authenticated`, true, {accessToken, refreshToken});
+        if (refreshToken) {
+            feedback = createFeedback(200, `${username} was authenticated`, true, { accessToken, refreshToken });
             // Store the user data in session
             req.session.user = { username: user.username }; 
         } else {
-            feedback=internalServerError();
+            feedback = internalServerError();
         }
     }
     res.status(feedback.statuscode).json(feedback);
-}
+};
 
 /**
  * This controller checks for req.body.refreshToken, looks up the token in the corresponding
