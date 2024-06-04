@@ -3,7 +3,6 @@ const {
     authenticate,
     authenticateRefreshToken,
     invalidateTokens,
-    authorizeAdmin
 } = require('../middleware/authorization');
 
 const {
@@ -26,7 +25,7 @@ router.post('/logout', invalidateTokens, logoutuser);
 // Protected routes
 router.post('/create-plagg', authenticate, createPlagg);
 router.delete('/remove-plagg', authenticate, removePlagg);
-router.delete('/delete-user', authenticate, authorizeAdmin, deleteuser);
-router.patch('/create-admin', authenticate, authorizeAdmin, upgradeuser);
+router.delete('/delete-user', authenticate,  deleteuser);
+router.patch('/create-admin', authenticate,  upgradeuser);
 
 module.exports = router;

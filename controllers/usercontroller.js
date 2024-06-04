@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const {User, Plagg} = require('../models/User');
+const mongoose = require('mongoose');
+const {User, Plagg, Cart} = require('../models/User');
 const RefreshToken = require('../models/RefreshToken');
 const crypto = require('crypto');
 
@@ -14,39 +15,46 @@ const { response } = require('express');
 
 const createuser = async (req, res) => {
     const { username, password } = req.body;
-    console.log('Username:', username);
-    console.log('Password:', password);
-
-    if (typeof(username) !== 'undefined' && typeof(password) !== 'undefined') {
+    if (username && password) {
         try {
-            // Create user without cart
-            let user = new User({ username, password });
+            // Check if user already exists
+            const existingUser = await User.findOne({ username });
+            if (existingUser) {
+                return res.status(400).json({ message: 'Username already exists', success: false });
+            }
 
-            // Save the user to get the _id
+            // Create a new user
+            const user = new User({ username, password });
             await user.save();
 
-            // Add cart to the user with owner set to user's _id
-            user.cart.push({ owner: user._id, cartPlagg: [] });
+            // Create an associated cart
+            const cart = new Cart({ owner: user._id, cartPlagg: [] });
+            await cart.save();
 
-            // Save the user again to update with cart
-            await user.save();
+            // Set user in session
+            req.session.user = {
+                id: user._id,
+                username: user.username,
+                role: user.role
+            };
 
-            // Generate tokens
-            const accessToken = generateAccessToken(user._id);
-            const refreshToken = await generateRefreshToken(user._id);
-
-            // Store user data in session
-            req.session.user = { username: user.username };
-
-            // Redirect to index page
             res.redirect('/');
         } catch (error) {
-            res.status(500).json({ message: 'An error occurred during user creation', success: false });
+            console.error(error);
+            res.status(500).json({
+                message: 'An error occurred during user creation',
+                success: false
+            });
         }
     } else {
-        res.status(400).json({ message: 'Invalid input data', success: false });
+        res.status(400).json({
+            message: 'Invalid input data',
+            success: false
+        });
     }
 };
+
+
 
 const upgradeuser = async (req, res)=>{
     const {username, isDowngrade} = req.body;
@@ -83,14 +91,25 @@ const deleteuser = async (req, res)=>{
     res.status(feedback.statuscode).json(feedback);
 }
 
-const logoutuser = async (req, res)=> {
-    let feedback = createFeedback(404, 'user not found!');
-    const {user} = req.body;
-    if(user){
-        feedback = createFeedback(200, `${user.username} has been logged out!`, true);
+const logoutuser = (req, res) => {
+    let feedback = createFeedback(404, 'User not found!');
+    const { user } = req.session;
+
+    if (user) {
+        req.session.destroy((err) => {
+            if (err) {
+                feedback = createFeedback(500, 'Failed to logout user!');
+                console.error('Error while logging out user:', err);
+            } else {
+                feedback = createFeedback(200, `${user.username} has been logged out!`, true);
+                console.log('User logged out:', user.username);
+            }
+            res.status(feedback.statuscode).json(feedback);
+        });
+    } else {
+        res.status(feedback.statuscode).json(feedback);
     }
-    res.status(feedback.statuscode).json(feedback);
-}
+};
 
 const loginuser = async (req, res) => {
     const { username, password } = req.body;
@@ -104,8 +123,7 @@ const loginuser = async (req, res) => {
                 const refreshToken = await generateRefreshToken(user._id);
 
                 // Store user data in session
-                req.session.user = { username: user.username };
-
+                req.session.user = { username: user.username, role: user.role };
                 // Redirect to index page
                 res.redirect('/');
             } else {
@@ -138,41 +156,36 @@ const refreshUser = async (req, res)=>{
  */
 const createPlagg = async (req, res) => {
     const { productName, kategori, description, imageUrl } = req.body;
-    const user = req.session.user; // Få brukeren fra sesjonen
+    const user = req.session.user;
+
+    console.log('Received request to create plagg:', productName, kategori, description, imageUrl);
+    console.log('User session:', req.session);
 
     if (!user) {
+        console.log('Unauthorized: No user found in session');
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
     try {
         const newPlagg = new Plagg({
+            plaggId: new mongoose.Types.ObjectId(), // Generate a new ObjectId for plaggId
             productName,
             kategori,
             description,
-            imageUrl, // Legg til bilde-URL
-            creatorId: user._id
+            imageUrl,
+            creatorId: new mongoose.Types.ObjectId(user._id) // Ensure correct ObjectId creation
         });
 
         await newPlagg.save();
+        console.log('New plagg saved:', newPlagg);
 
-        const updatedUser = await User.findByIdAndUpdate(
-            user._id,
-            { $push: { plaggs: newPlagg._id } },
-            { new: true }
-        ).populate('plaggs');
-
-        req.session.user = updatedUser; // Oppdater brukersesjonen
-
-        res.redirect('/dashboard');
+        res.redirect('/dashboard'); // Redirect to dashboard after creation
     } catch (error) {
-        console.error(error);
+        console.error('Error while creating plagg:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-module.exports = {
-    createPlagg
-};
 
 const removePlagg = async (req, res)=>{
     let feedback=resourceNotFound();
@@ -192,6 +205,61 @@ const removePlagg = async (req, res)=>{
 
     sendresponse(res, feedback);
 }
+
+const getNewestPlaggPerCategory = async (req, res) => {
+    try {
+        const newestPlaggs = await Plagg.aggregate([
+            // Sort by kategori and timestamps in descending order
+            { $sort: { kategori: 1, timestamps: -1 } },
+            {
+                $group: {
+                    _id: "$kategori",
+                    latestPlagg: { $first: "$$ROOT" }
+                }
+            },
+            { $replaceRoot: { newRoot: "$latestPlagg" } }
+        ]);
+
+        res.render('index', {
+            title: 'Hjemmeside',
+            user: req.session.user,
+            newestPlaggs
+        });
+    } catch (error) {
+        console.error('Error while fetching newest plaggs:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+const addToCart = async (req, res) => {
+    const user = req.session.user;
+    if (!user) {
+        console.log('Unauthorized: No user found in session');
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { plaggId } = req.body;
+
+    try {
+        const plagg = await Plagg.findById(plaggId);
+        if (!plagg) {
+            return res.status(404).json({ message: 'Plagg not found' });
+        }
+
+        const cart = await Cart.findOneAndUpdate(
+            { owner: user.id },
+            { $push: { cartPlagg: plagg._id } },
+            { new: true }
+        ).populate('cartPlagg');
+
+        req.session.user.cart = cart;
+
+        res.redirect('/');
+    } catch (error) {
+        console.error('Error while adding plagg to cart:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
 
 function generateAccessToken(_id){
     const cryptotoken = crypto.randomBytes(32).toString('hex');
@@ -219,6 +287,8 @@ function sendresponse(response,feedback){
 module.exports={
     createPlagg,
     removePlagg,
+    getNewestPlaggPerCategory,
+    addToCart,
     createuser,
     loginuser,
     logoutuser,

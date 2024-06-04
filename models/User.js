@@ -2,42 +2,30 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const PASSWORD_LENGTH = 8;
 
-// Cart Schema
-const cartSchema = new mongoose.Schema({
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    cartPlagg: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plagg' }],
-});
-
+// Define Plagg Schema
 const plaggSchema = new mongoose.Schema({
-    plaggId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true },
+    plaggId: { type: mongoose.Types.ObjectId, required: true, unique: true },
     productName: { type: String, required: true },
     kategori: { type: String, required: true },
     description: { type: String, required: true },
-    imageUrl: { type: String, required: true }, // Nytt felt for bilde-URL
+    imageUrl: { type: String, required: true },
     timestamps: { type: Date, default: Date.now },
-    creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+    creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 });
-// User Schema
+
+// Define Cart Schema
+const cartSchema = new mongoose.Schema({
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    cartPlagg: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plagg' }]
+});
+
+// Define User Schema
 const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        lowercase: true,
-        unique: true
-    },
-    role: {
-        type: String,
-        required: true,
-        enum: ['user', 'admin'],
-        default: 'user'
-    },
-    password: {
-        type: String,
-        required: true,
-        minlength: [PASSWORD_LENGTH, `Passwords must have at least this many letters: ${PASSWORD_LENGTH}`]
-    },
-    cart: [cartSchema]
+    username: { type: String, required: true, lowercase: true, unique: true },
+    role: { type: String, required: true, enum: ['user', 'admin'], default: 'user' },
+    password: { type: String, required: true, minlength: [6, 'Passwords must have at least 6 characters'] }
 });
+
 
 userSchema.pre('save', hashPassword);
 
@@ -66,7 +54,7 @@ async function hashPassword(next) {
  * This function downgrades users by default. This is to ensure that any upgrade is
  * an explicit choice. 
  * @param {Boolean} isDowngrade if false, will upgrade 
- */
+*/
 async function changeUserRole(isDowngrade = true) {
     let updatedUser = null;
     if (isDowngrade) {
@@ -84,5 +72,6 @@ async function changeUserRole(isDowngrade = true) {
 
 const User = mongoose.model('User', userSchema);
 const Plagg = mongoose.model('Plagg', plaggSchema);
+const Cart = mongoose.model('Cart', cartSchema);
 
-module.exports = { User, Plagg };
+module.exports = { User, Plagg, Cart };

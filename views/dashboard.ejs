@@ -12,7 +12,7 @@
       <li><a href="/"><img src="IMG/Logo.png" alt="Logo" class="nav-logo"></a></li>
       <li><a href="/dashboard" class="nav-button">Dashboard - <%= user.username %></a></li>
       <% if (user) { %>
-        <li><a href="/logout" class="nav-button">Log Out</a></li>
+        <li><a href="/logout" class="nav-button" id="logoutLink">Log Out</a></li>
       <% } else { %>
         <li><a href="/login" class="nav-button">Log In</a></li>
       <% } %>
@@ -55,3 +55,25 @@
   </div>
 </body>
 </html>
+
+
+<script>
+  document.getElementById('logoutLink').addEventListener('click', function(event) {
+      event.preventDefault(); // Hindrer standard oppførsel for lenken
+
+      fetch('/logout', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      }).then(response => {
+          if (response.ok) {
+              window.location.href = '/';
+          } else {
+              console.error('Logout failed');
+          }
+      }).catch(error => {
+          console.error('Error:', error);
+      });
+  });
+</script>

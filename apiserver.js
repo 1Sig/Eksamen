@@ -19,26 +19,25 @@ const PORT = process.env.PORT || 3000;
 const DBURI = process.env.DBURI || '';
 
 // Konfigurer sessionsstøtte
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 app.use(session({
-    secret: 'hemmelig_nokkel_her', // Legg til en hemmelig nøkkel for å signere sesjonen
+    secret: 'hemmelig_nokkel_her', // Secret key for signing session
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { secure: false } // Use true for HTTPS
 }));
 
 app.use(flash());
 
-// Konfigurer front end
+// Configure frontend and routes
 configureFrontend(app);
+configureRoutes(app);
 
-//setup bodyparsing
-app.use(express.urlencoded({extended:true}));
-app.use(express.json());
 
 app.use(default_routes);
 app.use(user_api);
-
-// Konfigurer ruter
-configureRoutes(app);
 
 app.listen(PORT, ()=>{
     console.log(`Revving engine...`);

@@ -3,84 +3,58 @@ const path = require('path');
 const router = express.Router();
 const userRouter = require('./routes/api_user_routes');
 const { error } = require('console');
+const { createPlagg, getNewestPlaggPerCategory, addToCart  } = require('./controllers/usercontroller');
 
 const configureFrontend = (app) => {
-    // Sett EJS som templating motor
+    // Set EJS as templating engine
     app.set('view engine', 'ejs');
     app.set('views', path.join(__dirname, 'views'));
 
-    // Sett opp en statisk mappe for CSS, JS, bilder, etc.
+    // Set up a static folder for CSS, JS, images, etc.
     app.use(express.static(path.join(__dirname, 'public')));
 };
 
 const configureRoutes = (app) => {
-    // Ruter for visning
-    app.get('/', (req, res) => {
-       
-        // Sjekk om brukeren er logget inn
+    // View routes
+    app.get('/', getNewestPlaggPerCategory, (req, res) => {
+        // Check if the user is logged in
         const user = req.session.user;
-       
-        res.render('index', { title: 'Hjemmeside', user: user  });
+        res.render('index', { title: 'Hjemmeside', user: user });
     });
 
-  // Andre visningsruter
-  app.get('/login', (req, res) => {
-    // Sjekk om brukeren er logget inn
-    const user = req.session.user;
-    const errors = req.flash('error');
-    res.render('login', { title: 'Log Inn', user: user, errors: errors });
-});
-
-app.get('/register', (req, res) => {
-    // Sjekk om brukeren er logget inn
-    const user = req.session.user;
-    const errors = req.flash('error');
-    res.render('register', { title: 'Registration side', user: user, errors: errors });
-});
-
-app.get('/dashboard', (req, res) => {
-    const user = req.session.user;
-    if (!user) {
-        return res.redirect('/login');
-    }
-
-    res.render('dashboard', { title: 'Dashboard', user: user });
-});
-
-    // Rute for å opprette plagg
-    app.post('/create-plagg', (req, res) => {
-        const { productName, kategori, description, imageUrl } = req.body;
+    app.get('/login', (req, res) => {
+        // Check if the user is logged in
         const user = req.session.user;
+        const errors = req.flash('error');
+        res.render('login', { title: 'Log Inn', user: user, errors: errors });
+    });
 
+    app.get('/register', (req, res) => {
+        // Check if the user is logged in
+        const user = req.session.user;
+        const errors = req.flash('error');
+        res.render('register', { title: 'Registration side', user: user, errors: errors });
+    });
+
+    app.get('/dashboard', (req, res) => {
+        const user = req.session.user;
         if (!user) {
-            return res.status(401).json({ message: 'Unauthorized' });
+            return res.redirect('/login');
         }
-
-        const newPlagg = new Plagg({
-            productName,
-            kategori,
-            description,
-            imageUrl, // Legg til bilde-URL
-            creatorId: user._id
-        });
-
-        newPlagg.save()
-            .then(plagg => {
-                User.findByIdAndUpdate(
-                    user._id,
-                    { $push: { plaggs: plagg._id } },
-                    { new: true }
-                ).populate('plaggs').then(updatedUser => {
-                    req.session.user = updatedUser; // Oppdater brukersesjonen
-                    res.redirect('/dashboard');
-                });
-            })
-            .catch(error => {
-                console.error(error);
-                res.status(500).json({ message: 'Internal server error' });
-            });
+        if (user.role !== 'admin') {
+            return res.redirect('/'); // Redirect to home page if not admin
+        }
+        res.render('dashboard', { title: 'Dashboard', user: user });
     });
+
+    // Route to create plagg
+    app.post('/create-plagg', createPlagg);
+    
+    // Route to add plagg to cart
+    app.post('/add-to-cart', addToCart);
+    
 };
+
 
 module.exports = router;
 module.exports ={ configureFrontend, configureRoutes }

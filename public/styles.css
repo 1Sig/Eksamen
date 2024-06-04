@@ -4,6 +4,8 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #f0f0f0;
+    text-align: center; /* Center text in the body */
 }
 
 nav {
@@ -45,53 +47,61 @@ nav .nav-logo {
 }
 
 .container {
-    max-width: 800px; /* Adjust as needed */
-    margin: 0 auto; /* Center the container horizontally */
-    padding: 0 20px; /* Add spacing on the sides */
-  }
+    max-width: 1200px; /* Adjust as needed */
+    margin: 20px auto; /* Center the container horizontally */
+    padding: 20px; /* Add spacing on the sides */
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center; /* Center text in container */
+}
 
 form {
     margin-bottom: 20px;
 }
 
-input[type="text"],
-input[type="password"],
-textarea {
+input[type="text"], input[type="password"], textarea {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-button {
+button, .register-button {
     padding: 10px 20px;
     background-color: #007bff;
     border: none;
     color: white;
     cursor: pointer;
+    border-radius: 4px;
+    display: inline-block;
 }
 
-button:hover {
+button:hover, .register-button:hover {
     background-color: #0056b3;
+}
+
+.post-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px; /* Space between items */
+    margin: 0;
+    padding: 0;
+    list-style: none; /* Remove default list styling */
 }
 
 .post {
     border: 1px solid #ddd;
-    padding: 10px;
-    margin-bottom: 10px;
+    padding: 20px;
     background-color: #f9f9f9;
-}
-
-.register-button {
-    display: inline-block;
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.register-button:hover {
-    background-color: #0056b3;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 250px; /* Fixed width for each item */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items within the post */
 }
