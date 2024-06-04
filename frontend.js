@@ -38,15 +38,48 @@ app.get('/register', (req, res) => {
     res.render('register', { title: 'Registration side', user: user, errors: errors });
 });
 
-    // Ruter for statiske filer
-    app.get('/dashbord', (req, res) => {
-        // Sjekk om brukeren er logget inn
+app.get('/dashboard', (req, res) => {
+    const user = req.session.user;
+    if (!user) {
+        return res.redirect('/login');
+    }
+
+    res.render('dashboard', { title: 'Dashboard', user: user });
+});
+
+    // Rute for å opprette plagg
+    app.post('/create-plagg', (req, res) => {
+        const { productName, kategori, description, imageUrl } = req.body;
         const user = req.session.user;
 
-        res.render('dashbord', { title: 'Dashbord' , user: user  });
-    });
+        if (!user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
 
-    // Andre statiske filruter
+        const newPlagg = new Plagg({
+            productName,
+            kategori,
+            description,
+            imageUrl, // Legg til bilde-URL
+            creatorId: user._id
+        });
+
+        newPlagg.save()
+            .then(plagg => {
+                User.findByIdAndUpdate(
+                    user._id,
+                    { $push: { plaggs: plagg._id } },
+                    { new: true }
+                ).populate('plaggs').then(updatedUser => {
+                    req.session.user = updatedUser; // Oppdater brukersesjonen
+                    res.redirect('/dashboard');
+                });
+            })
+            .catch(error => {
+                console.error(error);
+                res.status(500).json({ message: 'Internal server error' });
+            });
+    });
 };
 
 module.exports = router;

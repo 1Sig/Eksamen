@@ -10,7 +10,7 @@
   <nav>
     <ul>
       <li><a href="/"><img src="IMG/Logo.png" alt="Logo" class="nav-logo"></a></li>
-      <li><a href="/dashboard" class="nav-button">Quote - <%= user.username %></a></li>
+      <li><a href="/dashboard" class="nav-button">Dashboard - <%= user.username %></a></li>
       <% if (user) { %>
         <li><a href="/logout" class="nav-button">Log Out</a></li>
       <% } else { %>
@@ -19,26 +19,39 @@
     </ul>
   </nav>
 
-  <div class="container"> 
+  <div class="container">
     <h1>Welcome to Your Dashboard, <%= user.username %>!</h1>
 
-    <h2>Post a Quote</h2>
-    <form action="/post-quote" method="POST">
-      <input type="text" name="quote" placeholder="Enter your quote" required>
+    <h2>Create a New Plagg</h2>
+    <form action="/create-plagg" method="POST">
+      <input type="text" name="productName" placeholder="Product Name" required>
+      <select name="kategori" required>
+        <option value="" disabled selected>Select Category</option>
+        <option value="genser">Genser</option>
+        <option value="t-skjorte">T-skjorte</option>
+      </select>
+      <textarea name="description" placeholder="Description" required></textarea>
+      <input type="text" name="imageUrl" placeholder="Image URL" required>
       <button type="submit">Submit</button>
     </form>
 
-    <!-- Display quotes -->
-    <% if (quotes.length > 0) { %>
-      <h2>Your Quotes</h2>
+    <!-- Display plaggs -->
+    <% if (user.plaggs && user.plaggs.length > 0) { %>
+      <h2>Your Plaggs</h2>
       <ul>
-        <% quotes.forEach(quote => { %>
-          <li><%= quote.quote %></li>
+        <% user.plaggs.forEach(plagg => { %>
+          <li>
+            <strong>Name:</strong> <%= plagg.productName %><br>
+            <strong>Category:</strong> <%= plagg.kategori %><br>
+            <strong>Description:</strong> <%= plagg.description %><br>
+            <strong>Image:</strong> <img src="<%= plagg.imageUrl %>" alt="<%= plagg.productName %>"><br>
+            <strong>Timestamp:</strong> <%= plagg.timestamps %>
+          </li>
         <% }); %>
       </ul>
     <% } else { %>
-      <p>No quotes posted yet.</p>
+      <p>No plaggs created yet.</p>
     <% } %>
-  </div> 
+  </div>
 </body>
 </html>

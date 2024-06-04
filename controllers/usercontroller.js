@@ -17,38 +17,36 @@ const createuser = async (req, res) => {
     console.log('Username:', username);
     console.log('Password:', password);
 
-    let feedback = createFeedback(404, `${username} could not be created.`);
-
     if (typeof(username) !== 'undefined' && typeof(password) !== 'undefined') {
         try {
-            // Opprett bruker
-            const user = await User.create({ username, password });
-            if (user) {
-                // Opprett cart for den nye brukeren
-                const cart = await Cart.create({ owner: user._id, cartId: new mongoose.Types.ObjectId() });
-                
-                if (cart) {
-                    // Generer tokens
-                    const accessToken = generateAccessToken(user._id);
-                    const refreshToken = await generateRefreshToken(user._id);
+            // Create user without cart
+            let user = new User({ username, password });
 
-                    // Lagre brukerdata i sesjonen
-                    req.session.user = { username: user.username };
+            // Save the user to get the _id
+            await user.save();
 
-                    feedback = createFeedback(200, `${username} was created and logged in!`, true, { user, cart, accessToken, refreshToken });
-                } else {
-                    feedback = internalServerError();
-                }
-            }
-        } catch(error) {
-            feedback = createFeedback(409, `${username} could not be created!`, false, error);
+            // Add cart to the user with owner set to user's _id
+            user.cart.push({ owner: user._id, cartPlagg: [] });
+
+            // Save the user again to update with cart
+            await user.save();
+
+            // Generate tokens
+            const accessToken = generateAccessToken(user._id);
+            const refreshToken = await generateRefreshToken(user._id);
+
+            // Store user data in session
+            req.session.user = { username: user.username };
+
+            // Redirect to index page
+            res.redirect('/');
+        } catch (error) {
+            res.status(500).json({ message: 'An error occurred during user creation', success: false });
         }
+    } else {
+        res.status(400).json({ message: 'Invalid input data', success: false });
     }
-    console.log('Payload:', feedback.payload); // Logging the payload to the console
-    res.status(feedback.statuscode).json(feedback);
 };
-
-
 
 const upgradeuser = async (req, res)=>{
     const {username, isDowngrade} = req.body;
@@ -93,26 +91,32 @@ const logoutuser = async (req, res)=> {
     }
     res.status(feedback.statuscode).json(feedback);
 }
+
 const loginuser = async (req, res) => {
     const { username, password } = req.body;
-    let feedback = accessDenied();
-    const user = await User.login(username, password);
 
-    if (user) {
-        const { _id } = user;
-        // Expiration: one hour
-        const accessToken = generateAccessToken(_id);
-        const refreshToken = await generateRefreshToken(_id);
+    if (typeof(username) !== 'undefined' && typeof(password) !== 'undefined') {
+        try {
+            const user = await User.login(username, password);
 
-        if (refreshToken) {
-            feedback = createFeedback(200, `${username} was authenticated`, true, { accessToken, refreshToken });
-            // Store the user data in session
-            req.session.user = { username: user.username }; 
-        } else {
-            feedback = internalServerError();
+            if (user) {
+                const accessToken = generateAccessToken(user._id);
+                const refreshToken = await generateRefreshToken(user._id);
+
+                // Store user data in session
+                req.session.user = { username: user.username };
+
+                // Redirect to index page
+                res.redirect('/');
+            } else {
+                res.status(401).json({ message: 'Invalid username or password', success: false });
+            }
+        } catch (error) {
+            res.status(500).json({ message: 'An error occurred during login', success: false });
         }
+    } else {
+        res.status(400).json({ message: 'Invalid input data', success: false });
     }
-    res.status(feedback.statuscode).json(feedback);
 };
 
 /**
@@ -132,23 +136,43 @@ const refreshUser = async (req, res)=>{
  * If either of those variables is not present. Then a json object relaying the failure
  * will be rendered.
  */
-const createPlagg = async (req,res)=>{
-    const {productName, description, user}=req.body;
-    let feedback= createFeedback(404, 'Faulty inputdata');
+const createPlagg = async (req, res) => {
+    const { productName, kategori, description, imageUrl } = req.body;
+    const user = req.session.user; // Få brukeren fra sesjonen
 
-    if(typeof(productName)!=='undefined'&&typeof(description)!=='undefined'&& typeof(user)!=='undefined'){
-        const plagg ={productName, description};
-        user.plaggs.push(plagg);
-        try {
-            const updatedUser = await user.save();
-            feedback=createFeedback(200, 'Plagg was inserted to the database',true, updatedUser.plaggs);
-        } catch (err) {
-            console.log(err)
-            feedback = createFeedback(500, 'Internal server error');
-        }
+    if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' });
     }
-    sendresponse(res,feedback);
-}
+
+    try {
+        const newPlagg = new Plagg({
+            productName,
+            kategori,
+            description,
+            imageUrl, // Legg til bilde-URL
+            creatorId: user._id
+        });
+
+        await newPlagg.save();
+
+        const updatedUser = await User.findByIdAndUpdate(
+            user._id,
+            { $push: { plaggs: newPlagg._id } },
+            { new: true }
+        ).populate('plaggs');
+
+        req.session.user = updatedUser; // Oppdater brukersesjonen
+
+        res.redirect('/dashboard');
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+module.exports = {
+    createPlagg
+};
 
 const removePlagg = async (req, res)=>{
     let feedback=resourceNotFound();

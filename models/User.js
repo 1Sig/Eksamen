@@ -6,19 +6,17 @@ const PASSWORD_LENGTH = 8;
 const cartSchema = new mongoose.Schema({
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     cartPlagg: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plagg' }],
-    cartId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true, default: () => new mongoose.Types.ObjectId() }
 });
 
-// Plagg Schema
 const plaggSchema = new mongoose.Schema({
     plaggId: { type: mongoose.Schema.Types.ObjectId, required: true, unique: true },
     productName: { type: String, required: true },
     kategori: { type: String, required: true },
     description: { type: String, required: true },
+    imageUrl: { type: String, required: true }, // Nytt felt for bilde-URL
     timestamps: { type: Date, default: Date.now },
     creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
-
 // User Schema
 const userSchema = new mongoose.Schema({
     username: {
@@ -46,19 +44,18 @@ userSchema.pre('save', hashPassword);
 userSchema.statics.login = login;
 userSchema.methods.changeUserRole = changeUserRole;
 
-async function login(username, password){
+async function login(username, password) {
     let loginresult = null;
-    const user = await this.findOne({username});
-    if(user){
+    const user = await this.findOne({ username });
+    if (user) {
         const auth = await bcrypt.compare(password, user.password);
-        if(auth) loginresult=user;
+        if (auth) loginresult = user;
     }
     return loginresult;
 }
 
-
-async function hashPassword(next){
-    if(this.isModified('password')){
+async function hashPassword(next) {
+    if (this.isModified('password')) {
         const salt = await bcrypt.genSalt();
         this.password = await bcrypt.hash(this.password, salt);
     }
