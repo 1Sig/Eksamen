@@ -284,10 +284,23 @@ function sendresponse(response,feedback){
     response.status(feedback.statuscode).json(feedback);
 }
 
+const getCategoryPlaggs = (category) => {
+    return async (req, res, next) => {
+        try {
+            const plaggs = await Plagg.find({ kategori: category }).exec();
+            res.locals.plaggs = plaggs;
+            next();
+        } catch (err) {
+            next(err);
+        }
+    };
+};
+
 module.exports={
     createPlagg,
     removePlagg,
     getNewestPlaggPerCategory,
+    getCategoryPlaggs, 
     addToCart,
     createuser,
     loginuser,

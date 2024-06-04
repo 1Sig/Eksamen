@@ -3,7 +3,7 @@ const path = require('path');
 const router = express.Router();
 const userRouter = require('./routes/api_user_routes');
 const { error } = require('console');
-const { createPlagg, getNewestPlaggPerCategory, addToCart  } = require('./controllers/usercontroller');
+const { createPlagg, getNewestPlaggPerCategory, getCategoryPlaggs, addToCart  } = require('./controllers/usercontroller');
 
 const configureFrontend = (app) => {
     // Set EJS as templating engine
@@ -45,6 +45,17 @@ const configureRoutes = (app) => {
             return res.redirect('/'); // Redirect to home page if not admin
         }
         res.render('dashboard', { title: 'Dashboard', user: user });
+    });
+
+    // Routes for categories
+    app.get('/t-skjorte', getCategoryPlaggs('t-skjorte'), (req, res) => {
+        const user = req.session.user;
+        res.render('t-skjorte', { title: 'T-skjorter', user: user, plaggs: res.locals.plaggs });
+    });
+
+    app.get('/genser', getCategoryPlaggs('genser'), (req, res) => {
+        const user = req.session.user;
+        res.render('genser', { title: 'Gensere', user: user, plaggs: res.locals.plaggs });
     });
 
     // Route to create plagg

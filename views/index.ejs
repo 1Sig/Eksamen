@@ -23,23 +23,27 @@
 
     <h2>Newest Plaggs per Category</h2>
     <div class="post-list">
-        <% newestPlaggs.forEach(plagg => { %>
-            <div class="post-container">
-                <div class="post">
-                    <h3><%= plagg.productName %> (Category: <%= plagg.kategori %>)</h3>
-                    <p><%= plagg.description %></p>
-                    <img src="<%= plagg.imageUrl %>" alt="<%= plagg.productName %>" style="width: 200px;">
-                    <% if (user) { %>
-                    <form action="/add-to-cart" method="post" style="margin-top: 10px;">
-                        <input type="hidden" name="plaggId" value="<%= plagg._id %>">
-                        <button type="submit" class="register-button">Add to Cart</button>
-                    </form>
-                    <% } %>
-                </div>
-            </div>
-        <% }) %>
+      <% newestPlaggs.forEach(plagg => { %>
+        <div class="post-container">
+          <div class="post">
+            <h3><%= plagg.productName %></h3>
+            <p><%= plagg.description %></p>
+            <img src="<%= plagg.imageUrl %>" alt="<%= plagg.productName %>" style="width: 200px;">
+            <% if (user) { %>
+              <form action="/add-to-cart" method="post" style="margin-top: 10px;">
+                <input type="hidden" name="plaggId" value="<%= plagg._id %>">
+                <button type="submit" class="register-button">Add to Cart</button>
+              </form>
+            <% } %>
+            <a href="/<%= plagg.kategori %>">
+              <button style="margin-top: 10px;">Se flere <%= plagg.kategori %></button>
+            </a>
+          </div>
+        </div>
+      <% }) %>
     </div>
-</div>
+  </body>
+  </html>
 </body>
 </html>
 

@@ -1,0 +1,41 @@
+<!-- views/category.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="/"><img src="/IMG/Logo.png" alt="Logo" class="nav-logo"></a></li>
+      <li><a href="/dashboard" class="nav-button">Quote</a></li>
+      <% if (user) { %>
+        <li><a href="/logout" class="nav-button" id="logoutLink">Log Out</a></li>
+      <% } else { %>
+        <li><a href="/login" class="nav-button">Log In</a></li>
+      <% } %>
+    </ul>
+  </nav>
+  <h2>T-skjorter</h2>
+    <div class="post-list">
+      <% plaggs.forEach(plagg => { %>
+        <div class="post-container">
+          <div class="post">
+            <h3><%= plagg.productName %></h3>
+            <p><%= plagg.description %></p>
+            <img src="<%= plagg.imageUrl %>" alt="<%= plagg.productName %>" style="width: 200px;">
+            <% if (user) { %>
+              <form action="/add-to-cart" method="post" style="margin-top: 10px;">
+                <input type="hidden" name="plaggId" value="<%= plagg._id %>">
+                <button type="submit" class="register-button">Add to Cart</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+</body>
+</html>
