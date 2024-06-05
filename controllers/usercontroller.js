@@ -91,25 +91,27 @@ const deleteuser = async (req, res)=>{
     res.status(feedback.statuscode).json(feedback);
 }
 
-const logoutuser = (req, res) => {
-    let feedback = createFeedback(404, 'User not found!');
-    const { user } = req.session;
-
-    if (user) {
-        req.session.destroy((err) => {
-            if (err) {
-                feedback = createFeedback(500, 'Failed to logout user!');
-                console.error('Error while logging out user:', err);
-            } else {
-                feedback = createFeedback(200, `${user.username} has been logged out!`, true);
-                console.log('User logged out:', user.username);
-            }
-            res.status(feedback.statuscode).json(feedback);
-        });
-    } else {
-        res.status(feedback.statuscode).json(feedback);
-    }
-};
+// const logoutuser = (req, res) => {
+//     if (req.session) {
+//         // Destroy the session
+//         req.session.destroy((err) => {
+//             if (err) {
+//                 console.error('Error while logging out user:', err);
+//                 res.status(500).json({ message: 'Failed to log out user' });
+//             } else {
+//                 // Clear the session cookies
+//                 res.clearCookie('session');
+//                 res.clearCookie('session.sig');
+//                 // Redirect or refresh the page
+//                 res.redirect('/'); // Redirect to login page
+//                 // or res.redirect(req.get('referer')); // Redirect to previous page
+//                 // or res.send('<script>window.location.href="/login";</script>'); // Refresh the page
+//             }
+//         });
+//     } else {
+//         res.status(404).json({ message: 'User not found' });
+//     }
+// };
 
 const loginuser = async (req, res) => {
     const { username, password } = req.body;
@@ -346,7 +348,7 @@ module.exports={
     addToCart,
     createuser,
     loginuser,
-    logoutuser,
+    // logoutuser,
     deleteuser,
     upgradeuser,
     refreshUser

@@ -20,7 +20,10 @@ const {
 router.post('/create-user', createuser);
 router.post('/loginuser', loginuser);
 router.post('/refreshuser', authenticateRefreshToken, refreshUser);
-router.post('/logout', invalidateTokens, logoutuser);
+// router.post('/logout', (req, res) => {
+//     req.session.destroy();
+//     res.redirect('/');
+// });
 
 // Protected routes
 router.post('/create-plagg', authenticate, createPlagg);

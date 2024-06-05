@@ -3,7 +3,7 @@ const path = require('path');
 const router = express.Router();
 const userRouter = require('./routes/api_user_routes');
 const { error } = require('console');
-const { createPlagg, getNewestPlaggPerCategory, getCategoryPlaggs, addToCart, getPlaggByProductName, getAllPlaggs, updatePlagg  } = require('./controllers/usercontroller');
+const { createPlagg, getNewestPlaggPerCategory, getCategoryPlaggs, addToCart, getPlaggByProductName, getAllPlaggs, updatePlagg, logoutuser  } = require('./controllers/usercontroller');
 
 const configureFrontend = (app) => {
     // Set EJS as templating engine
@@ -67,6 +67,12 @@ const configureRoutes = (app) => {
         }
     });
 
+    // Logout route
+    router.post('/logout', (req, res) => {
+        req.session.destroy();
+        res.redirect('/');
+    });
+    
     // Route to create plagg
     app.post('/create-plagg', createPlagg);
     

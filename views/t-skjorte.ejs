@@ -11,7 +11,11 @@
   <nav>
     <ul>
       <li><a href="/"><img src="/IMG/Logo.png" alt="Logo" class="nav-logo"></a></li>
-      <li><a href="/dashboard" class="nav-button">MetalCATS - <%= user.username %></a></li>
+      <% if (user) { %>
+        <li><a href="/dashboard" class="nav-button">MetalCATS - <%= user.username %></a></li>
+      <% } else { %>
+        <li><a href="/dashboard" class="nav-button">MetalCATS</a></li>
+      <% } %>
       <% if (user) { %>
         <li><a href="/logout" class="nav-button" id="logoutLink">Log Out</a></li>
       <% } else { %>
