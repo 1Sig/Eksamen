@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>plagg</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/"><img src="IMG/Logo.png" alt="Logo" class="nav-logo"></a></li>
+            <li><a href="/dashboard" class="nav-button">MetalCATS - <%= user.username %></a></li> 
+            <% if (user) { %>
+              <li><a href="/logout" class="nav-button" id="logoutLink">Log Out</a></li>
+            <% } else { %>
+              <li><a href="/login" class="nav-button">Log In</a></li>
+            <% } %> 
+        </ul>
+    </nav>
+
+    <h2>Edit Plagg: <%= plagg.productName %></h2>
+    <form action="/update-plagg/<%= plagg.productName %>" method="post">
+        <label for="productName">Product Name:</label>
+        <input type="text" id="productName" name="productName" value="<%= plagg.productName %>"><br>
+
+        <label for="kategori">Kategori:</label>
+        <input type="text" id="kategori" name="kategori" value="<%= plagg.kategori %>"><br>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"><%= plagg.description %></textarea><br>
+
+        <label for="imageUrl">Image URL:</label>
+        <input type="text" id="imageUrl" name="imageUrl" value="<%= plagg.imageUrl %>"><br>
+
+        <button type="submit">Save Changes</button>
+    </form>
+</body>
+</html>

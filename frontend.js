@@ -3,7 +3,7 @@ const path = require('path');
 const router = express.Router();
 const userRouter = require('./routes/api_user_routes');
 const { error } = require('console');
-const { createPlagg, getNewestPlaggPerCategory, getCategoryPlaggs, addToCart  } = require('./controllers/usercontroller');
+const { createPlagg, getNewestPlaggPerCategory, getCategoryPlaggs, addToCart, getPlaggByProductName, getAllPlaggs, updatePlagg  } = require('./controllers/usercontroller');
 
 const configureFrontend = (app) => {
     // Set EJS as templating engine
@@ -36,7 +36,7 @@ const configureRoutes = (app) => {
         res.render('register', { title: 'Registration side', user: user, errors: errors });
     });
 
-    app.get('/dashboard', (req, res) => {
+    app.get('/dashboard', getAllPlaggs, (req, res) => {
         const user = req.session.user;
         if (!user) {
             return res.redirect('/login');
@@ -44,7 +44,7 @@ const configureRoutes = (app) => {
         if (user.role !== 'admin') {
             return res.redirect('/'); // Redirect to home page if not admin
         }
-        res.render('dashboard', { title: 'Dashboard', user: user });
+        res.render('dashboard', { title: 'Dashboard', user: user, plaggs: res.locals.plaggs });
     });
 
     // Routes for categories
@@ -58,11 +58,23 @@ const configureRoutes = (app) => {
         res.render('genser', { title: 'Gensere', user: user, plaggs: res.locals.plaggs });
     });
 
+    app.get('/:productName', getPlaggByProductName, (req, res) => {
+        const user = req.session.user;
+        if (user && user.role === 'admin') {
+            res.render('edit-plagg', { title: 'Edit Plagg', user: user, plagg: res.locals.plagg });
+        } else {
+            res.render('/');
+        }
+    });
+
     // Route to create plagg
     app.post('/create-plagg', createPlagg);
     
     // Route to add plagg to cart
     app.post('/add-to-cart', addToCart);
+
+    // Route to update plagg
+    app.post('/update-plagg/:productName', updatePlagg);
     
 };
 

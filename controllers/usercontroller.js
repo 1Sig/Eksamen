@@ -296,11 +296,53 @@ const getCategoryPlaggs = (category) => {
     };
 };
 
+const getPlaggByProductName = async (req, res, next) => {
+    try {
+        const productName = req.params.productName;
+        const plagg = await Plagg.findOne({ productName }).exec();
+        if (!plagg) {
+            return res.status(404).send('Plagg not found');
+        }
+        res.locals.plagg = plagg;
+        next();
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+};
+
+// Function to get all plaggs
+const getAllPlaggs = async (req, res, next) => {
+    try {
+        const plaggs = await Plagg.find().exec();
+        res.locals.plaggs = plaggs;
+        next();
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+};
+
+const updatePlagg = async (req, res) => {
+    try {
+        const productName = req.params.productName;
+        const { productName: newProductName, kategori, description, imageUrl } = req.body;
+        await Plagg.updateOne({ productName }, { productName: newProductName, kategori, description, imageUrl }).exec();
+        res.redirect('/dashboard');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+};
+
 module.exports={
     createPlagg,
     removePlagg,
     getNewestPlaggPerCategory,
-    getCategoryPlaggs, 
+    getCategoryPlaggs,
+    getPlaggByProductName, 
+    getAllPlaggs,
+    updatePlagg,
     addToCart,
     createuser,
     loginuser,

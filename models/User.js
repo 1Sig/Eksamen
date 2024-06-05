@@ -5,7 +5,7 @@ const PASSWORD_LENGTH = 8;
 // Define Plagg Schema
 const plaggSchema = new mongoose.Schema({
     plaggId: { type: mongoose.Types.ObjectId, required: true, unique: true },
-    productName: { type: String, required: true },
+    productName: { type: String, required: true, unique: true },
     kategori: { type: String, required: true },
     description: { type: String, required: true },
     imageUrl: { type: String, required: true },

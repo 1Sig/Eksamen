@@ -105,3 +105,51 @@ button:hover, .register-button:hover {
     flex-direction: column;
     align-items: center; /* Center items within the post */
 }
+
+.plagg-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px; /* Space between items */
+    margin: 20px 0;
+    padding: 0;
+    list-style: none; /* Remove default list styling */
+}
+
+.plagg-item {
+    border: 1px solid #ddd;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 200px; /* Fixed width for each item */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items within the post */
+}
+
+.plagg-item img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.plagg-item h3 {
+    margin: 10px 0;
+}
+
+.plagg-item button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.plagg-item button:hover {
+    background-color: #0056b3;
+}

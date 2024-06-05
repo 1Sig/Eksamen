@@ -34,28 +34,23 @@
       <input type="text" name="imageUrl" placeholder="Image URL" required>
       <button type="submit">Submit</button>
     </form>
-
-    <!-- Display plaggs -->
-    <% if (user.plaggs && user.plaggs.length > 0) { %>
-      <h2>Your Plaggs</h2>
-      <ul>
-        <% user.plaggs.forEach(plagg => { %>
-          <li>
-            <strong>Name:</strong> <%= plagg.productName %><br>
-            <strong>Category:</strong> <%= plagg.kategori %><br>
-            <strong>Description:</strong> <%= plagg.description %><br>
-            <strong>Image:</strong> <img src="<%= plagg.imageUrl %>" alt="<%= plagg.productName %>"><br>
-            <strong>Timestamp:</strong> <%= plagg.timestamps %>
-          </li>
-        <% }); %>
-      </ul>
-    <% } else { %>
-      <p>No plaggs created yet.</p>
-    <% } %>
   </div>
+
+  <div class="plagg-list">
+    <% plaggs.forEach(plagg => { %>
+        <div class="plagg-item">
+            <h3><%= plagg.productName %></h3>
+            <p><%= plagg.description %></p>
+            <img src="<%= plagg.imageUrl %>" alt="<%= plagg.productName %>" style="width: 100px;">
+            <a href="/edit-plagg/<%= plagg.productName %>">
+                <button>Edit</button>
+            </a>
+        </div>
+    <% }) %>
+  </div>
+
 </body>
 </html>
-
 
 <script>
   document.getElementById('logoutLink').addEventListener('click', function(event) {
